@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三年級音樂大進擊</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+TC:wght@700;900&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DotGothic16', 'Noto Sans TC', sans-serif;
+            overflow: hidden;
+            background: #000;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        #bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: url('images/title_hero.png') center center / cover no-repeat;
+            z-index: 1;
+        }
+
+        #vignette {
+            position: fixed;
+            bottom: 0; left: 0;
+            width: 100%; height: 40%;
+            background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        #start-wrap {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 10vh;
+            text-align: center;
+        }
+
+        .ro-btn-start {
+            background: linear-gradient(180deg, #ffd700 0%, #ff8c00 100%);
+            color: #4a0000;
+            border: 3px solid #fff;
+            border-right-color: #888;
+            border-bottom-color: #888;
+            padding: 18px 60px;
+            font-size: 2.2rem;
+            font-family: inherit;
+            font-weight: 900;
+            cursor: pointer;
+            letter-spacing: 0.15em;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+            transition: transform 0.1s, filter 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ro-btn-start::before { content: '▶ '; }
+
+        .ro-btn-start:hover {
+            filter: brightness(1.15);
+            transform: scale(1.03);
+        }
+
+        .ro-btn-start:active {
+            border-top-color: #888;
+            border-left-color: #888;
+            border-right-color: #fff;
+            border-bottom-color: #fff;
+            transform: scale(0.97);
+            background: linear-gradient(180deg, #e6c200 0%, #e67e00 100%);
+        }
+
+        .ro-btn-start::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+        .ro-btn-start:hover::after { left: 100%; }
+
+        .hint {
+            color: #fff;
+            font-size: 1rem;
+            margin-top: 12px;
+            text-shadow: 1px 1px 2px #000;
+            opacity: 0.8;
+        }
+
+        /* BGM 控制按鈕 */
+        #bgm-control {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 50;
+            background: rgba(20, 30, 80, 0.8);
+            border: 2px solid #a0b4d6;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #fff;
+            transition: background 0.2s;
+        }
+        #bgm-control:hover {
+            background: rgba(20, 30, 80, 1);
+            border-color: #ffd700;
+        }
+        #bgm-control.muted {
+            opacity: 0.6;
+            border-color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div id="bg"></div>
+    <div id="vignette"></div>
+
+    <div id="bgm-control" onclick="toggleBgm()" title="背景音樂">🔇</div>
+
+    <div id="start-wrap">
+        <button class="ro-btn-start" onclick="startGame()">START</button>
+        <div class="hint">點擊開始冒險｜建議開啟聲音</div>
+    </div>
+
+    <audio id="bgm" loop preload="auto">
+        <source src="audio/bgm.mp3" type="audio/mpeg">
+        <source src="audio/bgm.ogg" type="audio/ogg">
+        <source src="audio/bgm.wav" type="audio/wav">
+    </audio>
+
+    <script>
+        const bgm = document.getElementById('bgm');
+        const bgmBtn = document.getElementById('bgm-control');
+        let bgmEnabled = true; // 預設開啟
+
+        // 除錯：如果音檔載入失敗
+        bgm.addEventListener('error', function(e) {
+            console.error('⚠️ BGM 音檔載入失敗！請檢查 audio/bgm.mp3 是否存在');
+            console.error('錯誤詳情:', e);
+        });
+
+        function startBgm() {
+            bgm.volume = 0.5;
+            bgmBtn.textContent = '🔊';
+            bgmBtn.classList.remove('muted');
+            bgm.play().then(() => {
+                bgmEnabled = true;
+            }).catch(e => {
+                // 被瀏覽器自動播放政策阻擋，等第一次點擊再試
+                console.log('自動播放被阻擋，等待使用者點擊...');
+                bgmBtn.textContent = '🔇';
+                bgmBtn.classList.add('muted');
+            });
+        }
+
+        function toggleBgm() {
+            if (!bgmEnabled) {
+                startBgm();
+            } else {
+                bgm.pause();
+                bgmEnabled = false;
+                bgmBtn.textContent = '🔇';
+                bgmBtn.classList.add('muted');
+            }
+        }
+
+        // 頁面載入立即嘗試播放
+        window.addEventListener('load', startBgm);
+
+        // 點擊畫面任意處也嘗試啟動音樂（瀏覽器限制需要使用者互動）
+        document.body.addEventListener('click', () => {
+            if (!bgmEnabled && bgm.paused) {
+                startBgm();
+            }
+        }, { once: true });
+
+        function startGame() {
+            // 淡入淡出，保持音樂狀態傳遞到下一頁
+            document.body.style.transition = 'opacity 0.4s';
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                window.location.href = 'game.html';
+            }, 400);
+        }
+    </script>
+</body>
+</html>

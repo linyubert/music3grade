@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RO音符傳說：期末大冒險</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+TC:wght@500;700&display=swap');
+
+        body {
+            margin: 0; padding: 0; background-color: #7b9f62;
+            background-image: repeating-linear-gradient(45deg, #7b9f62, #7b9f62 10px, #85a96c 10px, #85a96c 20px);
+            font-family: 'DotGothic16', 'Noto Sans TC', sans-serif; color: #ffffff;
+            display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; cursor: crosshair;
+        }
+
+        #game-container {
+            width: 95vw; max-width: 1000px; height: 90vh; position: relative;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+
+        /* 畫面震動特效 (Miss時觸發) */
+        .shake-screen { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-5px, 0, 0); }
+            20%, 80% { transform: translate3d(5px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-10px, 0, 0); }
+            40%, 60% { transform: translate3d(10px, 0, 0); }
+        }
+
+        /* RO 半透明視窗 */
+        .ro-window {
+            background-color: rgba(20, 30, 80, 0.85); border: 2px solid #a0b4d6; border-radius: 3px;
+            box-shadow: inset 1px 1px 0px rgba(255,255,255,0.3), inset -1px -1px 0px rgba(0,0,0,0.5), 2px 2px 5px rgba(0,0,0,0.5);
+            padding: 15px; position: relative;
+        }
+
+        /* 登入畫面 */
+        #login-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; text-align: center; z-index: 50; }
+        .login-input { width: 80%; padding: 10px; margin: 20px 0; font-family: inherit; font-size: 1.5rem; border: 2px solid #808080; text-align: center; }
+
+        /* 基本資訊與物品欄 */
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; display: none; justify-content: space-between; z-index: 10; pointer-events: none; }
+        #basic-info { width: 250px; pointer-events: auto; }
+        #inventory-box { width: 200px; pointer-events: auto; text-align: right; }
+        
+        .info-title { font-size: 1rem; color: #ffff00; margin-bottom: 5px; text-shadow: 1px 1px 0 #000; text-align: left; }
+        .bar-container { display: flex; align-items: center; margin-bottom: 5px; font-size: 1rem; text-shadow: 1px 1px 0 #000; }
+        .bar-label { width: 40px; text-align: left;}
+        .bar-bg { flex-grow: 1; height: 12px; background-color: #333; border: 1px solid #777; }
+        #hp-fill { width: 100%; height: 100%; background-color: #4caf50; } 
+        #sp-fill { width: 0%; height: 100%; background-color: #2196f3; transition: width 0.3s; }
+
+        /* 道具按鈕 */
+        .item-btn {
+            background: #d4d0c8; color: #000; border: 2px solid #fff; border-right-color: #888; border-bottom-color: #888;
+            font-family: inherit; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 5px; width: 100%; text-align: left;
+        }
+        .item-btn:hover { background: #e0e0e0; }
+        .item-btn:active { border-top-color: #888; border-left-color: #888; border-right-color: #fff; border-bottom-color: #fff; }
+        .item-disabled { filter: grayscale(100%); opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+        /* 中央圖片區 */
+        .scene-content { flex-grow: 1; display: flex; justify-content: center; align-items: center; margin-top: 20px; flex-direction: column; z-index: 5; position: relative; }
+        /* BGM 控制按鈕 */
+        #bgm-control {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 50;
+            background: rgba(20, 30, 80, 0.8);
+            border: 2px solid #a0b4d6;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #fff;
+            transition: background 0.2s, border-color 0.2s;
+            pointer-events: auto;
+        }
+        #bgm-control:hover {
+            background: rgba(20, 30, 80, 1);
+            border-color: #ffd700;
+        }
+        #bgm-control.muted {
+            opacity: 0.6;
+            border-color: #888;
+        }
+
+        .image-placeholder { width: 95%; height: 55vh; background-color: rgba(0, 0, 0, 0.2); border: 3px solid #a0b4d6; display: flex; justify-content: center; align-items: center; font-size: 2rem; color: #ffff00; text-shadow: 2px 2px 0 #000; flex-direction: column; position: relative; overflow: hidden; border-radius: 4px; box-shadow: inset 0 0 30px rgba(0,0,0,0.3), 0 4px 15px rgba(0,0,0,0.5); }
+        
+        /* 場景背景圖層（主視覺） */
+        #q-scene-bg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0.85;
+            z-index: 1;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        /* 地圖名稱在圖層上方 */
+        #q-map-name { position: relative; z-index: 2; font-size: 1.5rem; font-weight: bold; background: rgba(20,30,80,0.6); padding: 4px 16px; border-radius: 20px; border: 1px solid #a0b4d6; }
+
+        /* === BOSS血條 === */
+        #boss-ui { display: none; position: absolute; top: 10px; width: 80%; text-align: center; z-index: 10;}
+        #boss-name { color: #ff5555; font-size: 1.5rem; font-weight: bold; text-shadow: 2px 2px 0 #000; margin-bottom: 5px; }
+        #boss-hp-bg { width: 100%; height: 20px; background: #333; border: 2px solid #fff; box-shadow: 2px 2px 0 #000; }
+        #boss-hp-fill { width: 100%; height: 100%; background: #ff0000; transition: width 0.3s ease-out; }
+
+        /* 刀光特效 */
+        .slash-effect { position: absolute; width: 100%; height: 100%; background: linear-gradient(45deg, transparent 40%, #fff 50%, transparent 60%); background-size: 300% 300%; animation: slash 0.3s forwards; pointer-events: none; z-index: 20; opacity: 0; }
+        @keyframes slash { 0% { background-position: 100% 100%; opacity: 1; } 100% { background-position: 0% 0%; opacity: 0; } }
+
+        /* === Combo 連擊特效 === */
+        #combo-popup { position: absolute; top: 20%; left: 10%; font-size: 4rem; color: #ffeb3b; font-style: italic; font-weight: bold; text-shadow: 3px 3px 0 #ff0000, 5px 5px 0 #000; transform: rotate(-10deg) scale(0); opacity: 0; z-index: 30; pointer-events: none; }
+        .combo-anim { animation: popup 1s ease-out forwards; }
+        @keyframes popup { 0% { transform: rotate(-10deg) scale(0); opacity: 1; } 20% { transform: rotate(-10deg) scale(1.2); } 100% { transform: rotate(-10deg) scale(1); opacity: 0; top: 10%; } }
+
+        /* 底部對話框 */
+        .dialogue-area { height: 35vh; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; }
+        .npc-name { color: #ffff00; font-size: 1.8rem; font-weight: bold; text-shadow: 1px 1px 0 #000; margin-bottom: 5px; }
+        .dialogue-text { color: #ffffff; font-size: 1.8rem; line-height: 1.5; text-shadow: 1px 1px 0 #000; flex-grow: 1; }
+        .highlight { color: #87cefa; } 
+
+        /* 按鈕風格 */
+        .options-container { display: flex; justify-content: center; gap: 15px; margin-top: 10px; }
+        .ro-btn { background-color: #d4d0c8; color: #000; border-top: 3px solid #ffffff; border-left: 3px solid #ffffff; border-right: 3px solid #808080; border-bottom: 3px solid #808080; padding: 10px 20px; font-size: 1.5rem; font-family: inherit; font-weight: bold; cursor: pointer; flex: 1; max-width: 45%; }
+        .ro-btn:active { border-top-color: #808080; border-left-color: #808080; border-right-color: #ffffff; border-bottom-color: #ffffff; background-color: #c0c0c0; }
+        .ro-btn:hover { background-color: #e0e0e0; }
+        .scene { display: none; width: 100%; height: 100%; }
+        .active { display: flex; flex-direction: column; }
+
+        /* 回饋特效 */
+        #feedback-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: transparent; display: none; flex-direction: column; align-items: center; z-index: 100; width: 100%; }
+        .levelup-text { font-size: 5rem; color: #ffff00; font-weight: bold; text-shadow: 0 0 10px #ff0000, 3px 3px 0 #000; animation: floatUp 1.5s ease-out forwards; }
+        .wrong-text { font-size: 4rem; color: #ff5555; font-weight: bold; text-shadow: 3px 3px 0 #000; }
+        @keyframes floatUp { 0% { transform: translateY(20px); opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-50px); opacity: 0; } }
+
+        /* 盲盒轉蛋演出 */
+        #gacha-box { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; flex-direction: column; justify-content: center; align-items: center; }
+        .treasure-chest { font-size: 8rem; cursor: pointer; transition: transform 0.1s; animation: bounce 1s infinite; }
+        .treasure-chest:active { transform: scale(0.9); }
+        #loot-result { display: none; flex-direction: column; align-items: center; }
+        #loot-item { font-size: 3rem; color: #ffeb3b; font-weight: bold; text-shadow: 0 0 20px #ff9800; margin: 20px 0; animation: floatUp 2s ease-out forwards; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+    </style>
+</head>
+<body>
+<div id="game-container">
+    
+    <!-- BGM 音訊 -->
+    <audio id="bgm" loop preload="auto">
+        <source src="audio/bgm.mp3" type="audio/mpeg">
+        <source src="audio/bgm.ogg" type="audio/ogg">
+        <source src="audio/bgm.wav" type="audio/wav">
+    </audio>
+
+    <!-- BGM 控制按鈕 -->
+    <div id="bgm-control" onclick="toggleBgm()" title="背景音樂">🔇</div>
+
+        <!-- 登入畫面 -->
+    <div id="scene-login" class="scene active">
+        <div id="login-box" class="ro-window">
+            <div class="npc-name" style="text-align: center; font-size: 2.2rem;">角色創建</div>
+            <div style="font-size: 1.2rem; margin-top: 10px;">請輸入你的冒險者名稱：</div>
+            <input type="text" id="player-name-input" class="login-input" placeholder="例如：三年一班" autocomplete="off" maxlength="10">
+            <div class="options-container">
+                <button class="ro-btn" style="max-width: 100%;" onclick="startGame()">登入伺服器 (Start)</button>
+            </div>
+            <div style="margin-top: 15px; font-size: 0.9rem; color: #aaa;">(開啟聲音以獲得最佳體驗)</div>
+        </div>
+    </div>
+
+    <!-- UI 層 (基本資訊 + 物品欄) -->
+    <div id="ui-layer">
+        <div id="basic-info" class="ro-window">
+            <div class="info-title">Basic Info</div>
+            <div style="font-size: 1.1rem; text-shadow: 1px 1px 0 #000; margin-bottom: 5px;">
+                Name: <span class="player-name-text highlight">初學者</span><br>
+                Job: 音樂初學者 Lv.1
+            </div>
+            <div class="bar-container"><div class="bar-label">HP</div><div class="bar-bg"><div id="hp-fill"></div></div></div>
+            <div class="bar-container"><div class="bar-label">SP</div><div class="bar-bg"><div id="sp-fill"></div></div></div>
+            <div style="font-size: 1rem; text-shadow: 1px 1px 0 #000; margin-top: 5px;">Job EXP: <span id="score">0</span> / <span id="max-score">18</span></div>
+        </div>
+        
+        <div id="inventory-box" class="ro-window">
+            <div class="info-title">🎒 Inventory (背包)</div>
+            <button id="btn-magnifier" class="item-btn" onclick="useItem('magnifier')">🔍 放大鏡 (刪去法) x<span id="qty-magnifier">3</span></button>
+            <button id="btn-leaf" class="item-btn" onclick="useItem('leaf')">🍃 天地樹葉子 (免死) x<span id="qty-leaf">1</span></button>
+        </div>
+    </div>
+
+    <!-- Combo 顯示 -->
+    <div id="combo-popup">2 COMBO!</div>
+
+    <!-- 遊戲主場景 (題庫動態替換) -->
+    <div id="scene-question" class="scene">
+        <div class="scene-content">
+            <div class="image-placeholder" id="q-bg-box">
+                <!-- 場景背景圖 -->
+                <img id="q-scene-bg" src="" alt="">
+                <!-- BOSS 血條 -->
+                <div id="boss-ui">
+                    <div id="boss-name">魔化直笛巨像 [MVP]</div>
+                    <div id="boss-hp-bg"><div id="boss-hp-fill"></div></div>
+                </div>
+                <!-- 刀光特效 -->
+                <div class="slash-effect" id="slash-effect"></div>
+                <!-- 地圖名稱 -->
+                <span id="q-map-name">[載入地圖...]</span>
+            </div>
+        </div>
+        <div class="ro-window dialogue-area">
+            <div class="npc-name" id="q-npc-name">NPC</div>
+            <div class="dialogue-text" id="q-text">對話...</div>
+            <div class="options-container" id="q-options">
+                <!-- 按鈕將由 JS 動態生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 結局 -->
+    <div id="scene-ending" class="scene">
+        <div class="scene-content"><div class="image-placeholder" style="background-color:rgba(255, 215, 0, 0.3);">[Quest Cleared!]</div></div>
+        <div class="ro-window dialogue-area">
+            <div class="npc-name">系統公告</div>
+            <div id="ending-text" class="dialogue-text">計算經驗值中...</div>
+            <div class="options-container">
+                <button class="ro-btn" onclick="openGacha()">🎁 開啟通關盲盒</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 回饋 -->
+    <div id="feedback-overlay">
+        <div id="feedback-anim"></div>
+        <div id="feedback-msg" class="ro-window" style="margin-top: 20px; text-align: center; font-size: 1.5rem;"></div>
+        <button class="ro-btn" style="margin-top: 20px; font-size: 1.2rem;" onclick="closeFeedback()">點擊繼續 (Next)</button>
+    </div>
+
+    <!-- 轉蛋盲盒 UI -->
+    <div id="gacha-box">
+        <div id="chest-icon" class="treasure-chest" onclick="revealLoot()">🧰</div>
+        <div style="color:#fff; font-size:1.5rem; margin-top:20px;" id="chest-hint">點擊開啟掉落寶箱！</div>
+        <div id="loot-result">
+            <div id="loot-item">【黃金波利卡片】</div>
+            <button class="ro-btn" style="margin-top: 30px;" onclick="location.reload()">重新登入 (Restart)</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // === 場景背景圖對照表 ===
+    const bgMap = {
+        "[地圖：節奏平原]": "images/scene_rhythm_plain.png",
+        "[地圖：符號遺跡]": "images/scene_ruins.png",
+        "[地圖：迷霧森林]": "images/scene_forest.png",
+        "[地圖：四季音樂廳]": "images/scene_concert.png"
+    };
+    const bossBg = "images/scene_boss.png";
+
+    // === 遊戲題庫資料 (共 18 題) ===
+    const questionsData = [
+        // Zone 1: 節奏平原 (音符與休止符)
+        { map: "[地圖：節奏平原]", npc: "隊員 阿奏", text: "冒險開始！前方的史萊姆是『四分音符』，請問它有幾拍？", isBoss: false,
+          opts: [{ text: "1 拍", correct: true, msg: "正確！四分音符是 1 拍！" }, { text: "2 拍", correct: false, msg: "錯啦！二分音符才是 2 拍喔！" }] },
+        { map: "[地圖：節奏平原]", npc: "隊員 小晴", text: "那遇到胖胖的『全音符』呢？它會佔據幾拍的時間？", isBoss: false,
+          opts: [{ text: "4 拍", correct: true, msg: "正確！全音符最長，有 4 拍！" }, { text: "半 拍", correct: false, msg: "錯啦！半拍的是八分音符喔！" }] },
+        { map: "[地圖：節奏平原]", npc: "隊員 阿奏", text: "出現了長著尾巴、速度很快的『八分音符』怪物！它只有幾拍？", isBoss: false,
+          opts: [{ text: "1 拍", correct: false, msg: "太慢了！1拍是四分音符！" }, { text: "半 拍", correct: true, msg: "沒錯！八分音符速度很快，只有半拍！" }] },
+        { map: "[地圖：節奏平原]", npc: "系統精靈", text: "出現像『閃電』形狀的陷阱！這是『四分休止符』，我們必須安靜幾拍？", isBoss: false,
+          opts: [{ text: "1 拍", correct: true, msg: "正確！四分休止符要安靜 1 拍！" }, { text: "4 拍", correct: false, msg: "憋氣太久啦！4拍是全休止符！" }] },
+        { map: "[地圖：節奏平原]", npc: "隊員 小晴", text: "那『二分休止符』長得像什麼樣子呢？", isBoss: false,
+          opts: [{ text: "倒扣的帽子", correct: false, msg: "錯囉，倒扣的帽子(掛在第四線下方)是全休止符！" }, { text: "正放的小帽子", correct: true, msg: "答對了！像帽子放在第三線上就是二分休止符！" }] },
+        
+        // Zone 2: 符號遺跡 (五線譜、小節)
+        { map: "[地圖：符號遺跡]", npc: "遺跡守衛", text: "要通過遺跡，請回答：五線譜由下往上數，總共有幾條線、幾個間？", isBoss: false,
+          opts: [{ text: "5 條線，4 個間", correct: true, msg: "正確！就像你的手掌有5根手指與4個縫隙！" }, { text: "4 條線，5 個間", correct: false, msg: "記反了啦！" }] },
+        { map: "[地圖：符號遺跡]", npc: "遺跡守衛", text: "將樂曲分成固定拍數的區塊，我們稱這個區塊為什麼？", isBoss: false,
+          opts: [{ text: "小節", correct: true, msg: "正確！這就是小節的概念！" }, { text: "樂句", correct: false, msg: "不對喔，用來裝固定拍數的箱子叫做小節！" }] },
+        { map: "[地圖：符號遺跡]", npc: "遺跡守衛", text: "樂譜上用來分隔『小節』的那條垂直單線，叫做什麼名字？", isBoss: false,
+          opts: [{ text: "終止線", correct: false, msg: "不對，終止線是放在最後面的！" }, { text: "小節線", correct: true, msg: "答對了！畫出小節邊界的就是小節線！" }] },
+        { map: "[地圖：符號遺跡]", npc: "遺跡守衛", text: "很好。那樂譜最後面『一細一粗的雙直線』，代表樂曲結束的記號是？", isBoss: false,
+          opts: [{ text: "終止線", correct: true, msg: "過關！看到終止線就代表這首歌結束了！" }, { text: "圓滑線", correct: false, msg: "不對喔，圓滑線是彎彎的弧線！" }] },
+        
+        // Zone 3: 迷霧森林 (圓滑線、連結線、換氣)
+        { map: "[地圖：迷霧森林]", npc: "森林精靈", text: "冒險者，當你在樂譜上看到像打勾 ( v ) 的記號時，應該怎麼做？", isBoss: false,
+          opts: [{ text: "換氣深呼吸", correct: true, msg: "沒錯！這是換氣記號！" }, { text: "大聲用力吹", correct: false, msg: "錯了，這是提醒你要呼吸的換氣記號！" }] },
+        { map: "[地圖：迷霧森林]", npc: "森林精靈", text: "有兩個『一樣高』的音符被弧線連起來了，代表只要吹第一次，並把拍子相加。這是？", isBoss: false,
+          opts: [{ text: "圓滑線", correct: false, msg: "不對！一樣高的叫做連結線！" }, { text: "連結線", correct: true, msg: "完全正確！音高相同就是連結線！" }] },
+        { map: "[地圖：迷霧森林]", npc: "森林精靈", text: "那如果是兩個『不同高』的音符被連起來，要吹得很平順連貫呢？", isBoss: false,
+          opts: [{ text: "圓滑線", correct: true, msg: "答對了！不同音高就要用圓滑線！" }, { text: "連結線", correct: false, msg: "錯囉，不同音高的是圓滑線！" }] },
+        
+        // Zone 4: 四季音樂廳 (音樂欣賞)
+        { map: "[地圖：四季音樂廳]", npc: "NPC 指揮家", text: "請聽這首描寫太陽緩緩升起、充滿清新希望的曲子，是哪一首名曲？", isBoss: false,
+          opts: [{ text: "安德森《喇叭手的假日》", correct: false, msg: "不對，喇叭手的假日充滿了歡樂的小號聲！" }, { text: "葛利格《清晨》", correct: true, msg: "答對了！這是葛利格描寫晨景的名曲！" }] },
+        { map: "[地圖：四季音樂廳]", npc: "NPC 指揮家", text: "這首聽起來緊張、詭異，像在洞穴裡被怪物追逐的曲子，又是哪首？", isBoss: false,
+          opts: [{ text: "葛利格《山魔王宮殿》", correct: true, msg: "沒錯！聽起來非常緊張刺激！" }, { text: "孟德爾頌《春之歌》", correct: false, msg: "錯啦，春之歌是非常優美柔和的鋼琴曲！" }] },
+        { map: "[地圖：四季音樂廳]", npc: "NPC 指揮家", text: "最後，這首充滿活力、小號吹得飛快的歡樂節慶曲子是？", isBoss: false,
+          opts: [{ text: "孟德爾頌《春之歌》", correct: false, msg: "不對喔，這首是歡樂的喇叭手！" }, { text: "安德森《喇叭手的假日》", correct: true, msg: "正確！充滿了小號炫技的歡樂氣氛！" }] },
+        
+        // Zone 5: 巨像守護者 (直笛指法 Boss 戰)
+        { map: "[BOSS 戰：最終演奏台]", npc: "隊員 小晴", text: "BOSS 出現了！準備直笛技能！大拇指按背孔，正面只按『食指』，是什麼音？", isBoss: true,
+          opts: [{ text: "Si (西)", correct: true, msg: "技能發動！只按第1孔是 Si 音！" }, { text: "La (拉)", correct: false, msg: "技能失敗！La 音要按1、2孔喔！" }] },
+        { map: "[BOSS 戰：直笛共鳴]", npc: "隊員 阿奏", text: "連續攻擊！大拇指按背孔，正面按『食指 + 中指』呢？", isBoss: true,
+          opts: [{ text: "Sol (搜)", correct: false, msg: "按錯啦！Sol音要按三個孔！" }, { text: "La (拉)", correct: true, msg: "爆擊！按住前兩孔是 La 音！" }] },
+        { map: "[BOSS 戰：直笛爆發]", npc: "隊員 小晴", text: "加大火力！大拇指按背孔，正面按『食指 + 中指 + 無名指』？", isBoss: true,
+          opts: [{ text: "Sol (搜)", correct: true, msg: "完美命中！按住前三孔是 Sol 音！" }, { text: "Do (多)", correct: false, msg: "漏風啦！這是 Sol 音喔！" }] },
+        { map: "[BOSS 戰：最終詠唱]", npc: "小晴 & 阿奏", text: "最後一擊！背孔按一半(或放開)，正面只按『中指』？", isBoss: true,
+          opts: [{ text: "高音 Re", correct: false, msg: "差一點！這是高音 Do 喔！" }, { text: "高音 Do", correct: true, msg: "MVP！清脆的高音 Do 成功擊敗魔王！" }] }
+    ];
+
+    // === 遊戲狀態 ===
+    let score = 0; const maxScore = questionsData.length;
+    let combo = 0; 
+    let currentQIndex = 0;
+    let bossTotalHP = 4; // 最後4題是Boss戰
+    let bossCurrentHP = 4;
+    let playerName = "初學者";
+    let inventory = { magnifier: 3, leaf: 1 };
+
+    // === 音效合成系統 (Web Audio API) ===
+    let audioCtx;
+    function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if(audioCtx.state === 'suspended') audioCtx.resume(); }
+    function playTone(freq, type, duration, vol=0.1) {
+        if(!audioCtx) return;
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+        osc.stop(audioCtx.currentTime + duration);
+    }
+    function sfxClick() { initAudio(); playTone(800, 'sine', 0.1, 0.05); }
+    function sfxLevelUp() { initAudio(); playTone(400, 'square', 0.1); setTimeout(()=>playTone(600, 'square', 0.1), 100); setTimeout(()=>playTone(800, 'square', 0.3), 200); }
+    function sfxMiss() { initAudio(); playTone(150, 'sawtooth', 0.3, 0.2); }
+    function sfxHit() { initAudio(); playTone(100, 'square', 0.2, 0.3); setTimeout(()=>playTone(50, 'sawtooth', 0.2, 0.3), 50); }
+    function sfxLoot() { initAudio(); playTone(500, 'sine', 0.1); setTimeout(()=>playTone(1000, 'sine', 0.4), 100); }
+    document.querySelectorAll('button').forEach(b => b.addEventListener('mousedown', sfxClick));
+
+    // === BGM 背景音樂 ===
+    const bgm = document.getElementById('bgm');
+    const bgmBtn = document.getElementById('bgm-control');
+    let bgmEnabled = true; // 預設開啟
+
+    // 除錯：如果音檔載入失敗，顯示提示
+    bgm.addEventListener('error', function(e) {
+        console.error('⚠️ BGM 音檔載入失敗！請檢查 audio/bgm.mp3 是否存在');
+        console.error('錯誤詳情:', e);
+    });
+
+    function startBgm() {
+        bgm.volume = 0.5;
+        bgmBtn.textContent = '🔊';
+        bgmBtn.classList.remove('muted');
+        bgm.play().then(() => {
+            bgmEnabled = true;
+        }).catch(e => {
+            // 被瀏覽器自動播放政策阻擋，等第一次點擊再試
+            console.log('自動播放被阻擋，等待使用者點擊...');
+            bgmBtn.textContent = '🔇';
+            bgmBtn.classList.add('muted');
+        });
+    }
+
+    function toggleBgm() {
+        if (!bgmEnabled) {
+            startBgm();
+        } else {
+            bgm.pause();
+            bgmEnabled = false;
+            bgmBtn.textContent = '🔇';
+            bgmBtn.classList.add('muted');
+        }
+    }
+
+    // 頁面載入立即嘗試播放
+    window.addEventListener('load', startBgm);
+
+    // 點擊畫面任意處也嘗試啟動音樂（瀏覽器限制需要使用者互動）
+    document.body.addEventListener('click', () => {
+        if (!bgmEnabled && bgm.paused) {
+            startBgm();
+        }
+    }, { once: true });
+
+    // === 遊戲流程 ===
+    function startGame() {
+        initAudio();
+        const inputName = document.getElementById('player-name-input').value.trim();
+        if (inputName !== "") playerName = inputName;
+        document.querySelectorAll('.player-name-text').forEach(span => span.innerText = playerName);
+        document.getElementById('ui-layer').style.display = 'flex';
+        document.getElementById('max-score').innerText = maxScore;
+        
+        currentQIndex = 0;
+        renderQuestion();
+        switchScene('scene-question');
+    }
+
+    function switchScene(sceneId) {
+        document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
+        document.getElementById(sceneId).classList.add('active');
+    }
+
+    function renderQuestion() {
+        const q = questionsData[currentQIndex];
+        document.getElementById('q-map-name').innerText = q.map;
+        document.getElementById('q-npc-name').innerText = q.npc;
+        
+        // 替換文本中的玩家名稱
+        let replacedText = q.text.replace(/玩家/g, `<span class="highlight">${playerName}</span>`);
+        document.getElementById('q-text').innerHTML = replacedText;
+
+        // === 切換場景背景圖 ===
+        const sceneImg = document.getElementById('q-scene-bg');
+        if (sceneImg) {
+            sceneImg.src = q.isBoss ? bossBg : (bgMap[q.map] || "");
+        }
+
+        // 處理 Boss UI
+        const bossUI = document.getElementById('boss-ui');
+        const bgBox = document.getElementById('q-bg-box');
+        if (q.isBoss) {
+            bossUI.style.display = 'block';
+            bgBox.style.borderColor = '#55ff55';
+            document.getElementById('boss-hp-fill').style.width = ((bossCurrentHP / bossTotalHP) * 100) + '%';
+        } else {
+            bossUI.style.display = 'none';
+            bgBox.style.borderColor = '#ffff00';
+        }
+
+        // 渲染按鈕
+        const optionsContainer = document.getElementById('q-options');
+        optionsContainer.innerHTML = '';
+        
+        // 打亂選項順序增加趣味性
+        let shuffledOpts = [...q.opts].sort(() => Math.random() - 0.5);
+        shuffledOpts.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'ro-btn opt-btn';
+            if (!opt.correct) btn.classList.add('wrong-opt');
+            btn.innerText = opt.text;
+            btn.onclick = () => processAnswer(opt.correct, opt.msg, q.isBoss);
+            btn.addEventListener('mousedown', sfxClick);
+            optionsContainer.appendChild(btn);
+        });
+
+        // 恢復放大鏡按鈕狀態 (如果還有數量)
+        if (inventory.magnifier > 0) {
+            document.getElementById('btn-magnifier').classList.remove('item-disabled');
+        }
+    }
+
+    function processAnswer(isCorrect, feedbackMsg, isBoss) {
+        const overlay = document.getElementById('feedback-overlay');
+        const anim = document.getElementById('feedback-anim');
+        
+        if (isCorrect) {
+            score++; combo++;
+            document.getElementById('score').innerText = score;
+            document.getElementById('sp-fill').style.width = ((score / maxScore) * 100) + '%';
+            
+            if (isBoss) {
+                bossCurrentHP--;
+                document.getElementById('boss-hp-fill').style.width = ((bossCurrentHP / bossTotalHP) * 100) + '%';
+                // 刀光特效
+                const slash = document.getElementById('slash-effect');
+                slash.style.animation = 'none'; void slash.offsetWidth; slash.style.animation = 'slash 0.3s forwards';
+                sfxHit();
+            } else {
+                sfxLevelUp();
+            }
+            anim.innerHTML = 'SUCCESS!!'; anim.className = 'levelup-text'; 
+            anim.style.animation = 'none'; void anim.offsetWidth; anim.style.animation = 'floatUp 1.5s ease-out forwards';
+            showCombo();
+        } else {
+            combo = 0;
+            sfxMiss();
+            anim.innerHTML = 'Miss...'; anim.className = 'wrong-text'; anim.style.animation = 'none';
+            // 畫面震動
+            const container = document.getElementById('game-container');
+            container.classList.add('shake-screen');
+            setTimeout(() => container.classList.remove('shake-screen'), 400);
+        }
+        document.getElementById('feedback-msg').innerHTML = feedbackMsg;
+        overlay.style.display = 'flex';
+    }
+
+    function closeFeedback() {
+        document.getElementById('feedback-overlay').style.display = 'none';
+        currentQIndex++;
+        
+        if (currentQIndex < questionsData.length) {
+            renderQuestion();
+        } else {
+            calculateEnding();
+            switchScene('scene-ending');
+        }
+    }
+
+    // === Combo 系統 ===
+    function showCombo() {
+        if(combo < 2) return;
+        const popup = document.getElementById('combo-popup');
+        popup.innerText = combo + " COMBO!";
+        popup.classList.remove('combo-anim'); void popup.offsetWidth; popup.classList.add('combo-anim');
+    }
+
+    // === 道具系統 ===
+    function useItem(item) {
+        if(inventory[item] <= 0) return;
+        initAudio();
+        if(item === 'magnifier') {
+            const wrongBtns = document.querySelectorAll('.wrong-opt');
+            // 如果已經隱藏過了，或是沒有錯誤選項
+            let hasVisibleWrongOpt = false;
+            wrongBtns.forEach(btn => { if(btn.style.visibility !== 'hidden') hasVisibleWrongOpt = true; });
+            if (!hasVisibleWrongOpt) {
+                alert("目前不需要使用放大鏡！");
+                return;
+            }
+            if(!confirm("確定要消耗 [放大鏡] 刪除一個錯誤答案嗎？")) return;
+            
+            wrongBtns.forEach(btn => btn.style.visibility = 'hidden');
+            inventory.magnifier--;
+            document.getElementById('qty-magnifier').innerText = inventory.magnifier;
+            document.getElementById('btn-magnifier').classList.add('item-disabled'); // 本題禁用
+            sfxLevelUp();
+        }
+        
+        if(item === 'leaf') {
+            if(!confirm("確定要在答錯時使用 [天地樹葉子] 重新挑戰嗎？\n(請在看到 Miss 結算前點擊此按鈕發動)")) return;
+            alert("已發動復活預備！如果是剛答錯，請老師手動讓學生重新回答。");
+            inventory.leaf--;
+            document.getElementById('qty-leaf').innerText = inventory.leaf;
+            if(inventory.leaf===0) document.getElementById('btn-leaf').classList.add('item-disabled');
+        }
+    }
+
+    // === 結局與盲盒 ===
+    function calculateEnding() {
+        document.getElementById('ui-layer').style.display = 'none';
+        const endText = document.getElementById('ending-text');
+        
+        // 評分標準 (總分18)
+        if (score >= 15) {
+            endText.innerHTML = `🏆 <span class='highlight'>【傳說 MVP：宮廷魔法樂師】</span>
+太神啦！${playerName} 展現了完美的音樂知識，討伐成功，世界恢復和平！四年級也要繼續認真學習喔！`;
+        } else if (score >= 10) {
+            endText.innerHTML = `🌟 <span class='highlight'>【進階職業：中階吹笛手】</span>
+表現不錯！${playerName} 成功擊敗了魔王，但還有進步空間，四年級也要繼續加油！`;
+        } else {
+            endText.innerHTML = `✨ <span class='highlight'>【等級提升：進階初學者】</span>
+雖然有點驚險，但 ${playerName} 還是存活下來了！趕快回村莊補血，四年級再挑戰轉職吧！`;
+        }
+    }
+
+    function openGacha() {
+        document.getElementById('gacha-box').style.display = 'flex';
+    }
+
+    function revealLoot() {
+        sfxLoot();
+        document.getElementById('chest-icon').style.display = 'none';
+        document.getElementById('chest-hint').style.display = 'none';
+        
+        const loots = ["【黃金波利卡片】(傳說)", "【老舊收集冊】(稀有)", "【神聖直笛】(史詩)", "【蘋果頭飾】(精良)", "【神秘的樂譜碎片】(普通)"];
+        const randomLoot = loots[Math.floor(Math.random() * loots.length)];
+        
+        document.getElementById('loot-item').innerText = randomLoot;
+        document.getElementById('loot-result').style.display = 'flex';
+    }
+</script>
+</body>
+</html>

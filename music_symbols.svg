@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" style="background:#f8f9fa">
+  <defs>
+    <!-- 五線譜模板 -->
+    <g id="staff">
+      <line x1="0" y1="0" x2="280" y2="0" stroke="black" stroke-width="2"/>
+      <line x1="0" y1="20" x2="280" y2="20" stroke="black" stroke-width="2"/>
+      <line x1="0" y1="40" x2="280" y2="40" stroke="black" stroke-width="2"/>
+      <line x1="0" y1="60" x2="280" y2="60" stroke="black" stroke-width="2"/>
+      <line x1="0" y1="80" x2="280" y2="80" stroke="black" stroke-width="2"/>
+    </g>
+  </defs>
+
+  <text x="500" y="35" font-family="'Noto Sans TC', sans-serif" font-size="22" text-anchor="middle" font-weight="bold" fill="#333">音符與記號正確素材集</text>
+
+  <!-- 1. 全音符 (Whole Note) - 4拍 -->
+  <g transform="translate(40, 70)">
+    <use href="#staff"/>
+    <ellipse cx="140" cy="40" rx="14" ry="10" fill="none" stroke="black" stroke-width="2.5"/>
+    <text x="140" y="110" font-family="'Noto Sans TC', sans-serif" font-size="15" text-anchor="middle" fill="#333">全音符 (4拍)</text>
+  </g>
+
+  <!-- 2. 二分音符 (Half Note) - 2拍 -->
+  <g transform="translate(360, 70)">
+    <use href="#staff"/>
+    <ellipse cx="140" cy="40" rx="14" ry="10" fill="none" stroke="black" stroke-width="2.5"/>
+    <line x1="154" y1="40" x2="154" y2="-30" stroke="black" stroke-width="2.5"/>
+    <text x="140" y="110" font-family="'Noto Sans TC', sans-serif" font-size="15" text-anchor="middle" fill="#333">二分音符 (2拍)</text>
+  </g>
+
+  <!-- 3. 四分音符 (Quarter Note) - 1拍 -->
+  <g transform="translate(680, 70)">
+    <use href="#staff"/>
+    <ellipse cx="140" cy="60" rx="12" ry="9" fill="black" stroke="black" stroke-width="1"/>
+    <line x1="152" y1="60" x2="152" y2="-10" stroke="black" stroke-width="2.5"/>
+    <text x="140" y="110" font-family="'Noto Sans TC', sans-serif" font-size="15" text-anchor="middle" fill="#333">四分音符 (1拍)</text>
+  </g>
+
+  <!-- 4. 八分音符 (Eighth Note) - 半拍 -->
+  <g transform="translate(40, 210)">
+    <use href="#staff"/>
+    <ellipse cx="130" cy="60" rx="11" ry="8" fill="black" stroke="black" stroke-width="1"/>
+    <line x1="141" y1="60" x2="141" y2="-10" stroke="black" stroke-width="2.5"/>
+    <!-- 旗尾 -->
+    <path d="M 141,-10 Q 165,-5 165,15 Q 165,25 141,20" fill="none" stroke="black" stroke-width="2.5"/>
+    <text x="140" y="110" font-family="'Noto Sans TC', sans-serif" font-size="15" text-anchor="middle" fill="#333">八分音符 (½拍)</text>
+  </g>
+
+  <!-- 5. 全休止符 (Whole Rest) - 倒扣帽子，掛第四線下方 -->
+  <g transform="translate(360, 210)">
+    <use href="#staff"/>
+    <!-- 第四線 y=60，矩形頂部貼齊 60，向下 -->
+    <rect x="126" y="60" width="28" height="10" fill="black" stroke="black" stroke-width="0.5"/>
+    <text x="140" y="110" font-family="'Noto Sans TC', sans-serif" font-size="15" text-anchor="middle" fill="#333">全休止符 (4拍)</text>
+  </g>
+
+  <!-- 6. 二分休止符 (Half Rest) - 正放小帽子，坐第三線上 -->
+  <g transform="translate(680, 210)">
+    <use href="#staff"/>
+    <!-- 第三線 y=40，矩形底部貼齊 40，向上 -->
+    <rect x="126" y="30" width="28" height="10" fill="black" stroke="black" stroke-width="0.5"/>
+    <text x="140" y="110" font-family="'Noto Sans TC', sans-serif" font-size="15" text-anchor="middle" fill="#333">二分休止符 (2拍)</text>
+  </g>
+
+  <!-- 7. 四分休止符 (Quarter Rest) - 像閃電/曲折 -->
+  <g transform="translate(40, 350)">
+    <use href="#staff"/>
+    <path d="M 145,15 L 152,28 L 140,40 L 155,55 L 142,68 L 152,82" fill="none" stroke="black" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="140" y="110" font-family="'Noto Sans TC', sans-serif" font-size="15" text-anchor="middle" fill="#333">四分休止符 (1拍)</text>
+  </g>
+
+  <!-- 8. 換氣記號 (Breath Mark) - 像 v / 打勾 -->
+  <g transform="translate(360, 350)">
+    <use href="#staff"/>
+    <path d="M 130,50 L 145,70 L 160,50" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="145" y="110" font-family="'Noto Sans TC', sans-serif" font-size="15" text-anchor="middle" fill="#333">換氣記號 (換氣)</text>
+  </g>
+
+  <!-- 9. 小節線 (Bar Line) -->
+  <g transform="translate(680, 350)">
+    <use href="#staff"/>
+    <line x1="140" y1="-10" x2="140" y2="90" stroke="black" stroke-width="3"/>
+    <text x="140" y="110" font-family="'Noto Sans TC', sans-serif" font-size="15" text-anchor="middle" fill="#333">小節線</text>
+  </g>
+
+  <!-- 10. 終止線 (Final Bar Line) - 一細一粗 -->
+  <g transform="translate(40, 490)">
+    <use href="#staff"/>
+    <line x1="130" y1="-10" x2="130" y2="90" stroke="black" stroke-width="2"/>
+    <line x1="150" y1="-10" x2="150" y2="90" stroke="black" stroke-width="5"/>
+    <text x="140" y="110" font-family="'Noto Sans TC', sans-serif" font-size="15" text-anchor="middle" fill="#333">終止線 (樂曲結束)</text>
+  </g>
+
+  <!-- 11. 圓滑線 (Slur) - 連接不同音高，向下彎 -->
+  <g transform="translate(360, 490)">
+    <use href="#staff"/>
+    <ellipse cx="110" cy="50" rx="12" ry="9" fill="black"/>
+    <line x1="122" y1="50" x2="122" y2="-20" stroke="black" stroke-width="2.5"/>
+    <ellipse cx="170" cy="30" rx="12" ry="9" fill="black"/>
+    <line x1="182" y1="30" x2="182" y2="-40" stroke="black" stroke-width="2.5"/>
+    <path d="M 110,-25 Q 140,-55 170,-35" fill="none" stroke="black" stroke-width="2.5"/>
+    <text x="140" y="110" font-family="'Noto Sans TC', sans-serif" font-size="15" text-anchor="middle" fill="#333">圓滑線 (不同音高)</text>
+  </g>
+
+  <!-- 12. 連結線 (Tie) - 連接相同音高，向上彎 -->
+  <g transform="translate(680, 490)">
+    <use href="#staff"/>
+    <ellipse cx="110" cy="40" rx="12" ry="9" fill="none" stroke="black" stroke-width="2"/>
+    <line x1="122" y1="40" x2="122" y2="-30" stroke="black" stroke-width="2.5"/>
+    <ellipse cx="170" cy="40" rx="12" ry="9" fill="none" stroke="black" stroke-width="2"/>
+    <line x1="182" y1="40" x2="182" y2="-30" stroke="black" stroke-width="2.5"/>
+    <path d="M 110,15 Q 140,-15 170,15" fill="none" stroke="black" stroke-width="2.5"/>
+    <text x="140" y="110" font-family="'Noto Sans TC', sans-serif" font-size="15" text-anchor="middle" fill="#333">連結線 (相同音高)</text>
+  </g>
+
+  <!-- 五線譜本身說明 -->
+  <g transform="translate(40, 620)">
+    <use href="#staff"/>
+    <text x="140" y="105" font-family="'Noto Sans TC', sans-serif" font-size="15" text-anchor="middle" fill="#333">五線譜 (5條線 + 4個間)</text>
+  </g>
+</svg>

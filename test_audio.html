@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>音檔測試</title>
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; padding: 40px; background: #222; color: #fff; }
+        .ok { color: #4caf50; font-weight: bold; }
+        .err { color: #f44336; font-weight: bold; }
+        .warn { color: #ff9800; }
+        button { padding: 12px 24px; font-size: 1.2rem; cursor: pointer; margin: 10px; }
+        #log { background: #111; padding: 15px; border-radius: 4px; margin-top: 20px; font-family: monospace; line-height: 1.8; }
+    </style>
+</head>
+<body>
+    <h1>🎵 音檔路徑測試</h1>
+    <p>點擊下方按鈕測試音檔是否能正確載入：</p>
+    <button onclick="testAudio()">測試 audio/bgm.mp3</button>
+    <button onclick="testAudioFallback()">測試 audio/bgm.ogg</button>
+    <button onclick="testAudioWav()">測試 audio/bgm.wav</button>
+    <div id="log">等待測試...</div>
+
+    <hr style="margin: 30px 0; border-color: #444;">
+    <h2>✅ 正確的檔案結構應該長這樣：</h2>
+    <pre style="background:#111; padding:15px; border-radius:4px;">
+/your-website-folder/
+  ├── index.html
+  ├── game.html
+  ├── test_audio.html
+  ├── <span class="ok">audio/</span>          ← 放這裡！
+  │     └── <span class="ok">bgm.mp3</span>      ← 檔名要對！
+  ├── images/
+  │     └── ...
+  └── ...
+    </pre>
+
+    <script>
+        const log = document.getElementById('log');
+        function add(msg, cls) {
+            log.innerHTML += `<div class="${cls}">${msg}</div>`;
+        }
+
+        function testAudio() {
+            log.innerHTML = '';
+            const a = new Audio('audio/bgm.mp3');
+            a.addEventListener('canplaythrough', () => add('✅ audio/bgm.mp3 載入成功！', 'ok'));
+            a.addEventListener('error', (e) => {
+                add('❌ audio/bgm.mp3 載入失敗', 'err');
+                add('錯誤碼: ' + (a.error ? a.error.code : '未知'), 'warn');
+                add('說明：1=MEDIA_ERR_ABORTED, 2=MEDIA_ERR_NETWORK, 3=MEDIA_ERR_DECODE, 4=MEDIA_ERR_SRC_NOT_SUPPORTED', 'warn');
+            });
+            a.load();
+        }
+
+        function testAudioFallback() {
+            log.innerHTML = '';
+            const a = new Audio('audio/bgm.ogg');
+            a.addEventListener('canplaythrough', () => add('✅ audio/bgm.ogg 載入成功！', 'ok'));
+            a.addEventListener('error', () => add('❌ audio/bgm.ogg 不存在或格式不支援', 'err'));
+            a.load();
+        }
+
+        function testAudioWav() {
+            log.innerHTML = '';
+            const a = new Audio('audio/bgm.wav');
+            a.addEventListener('canplaythrough', () => add('✅ audio/bgm.wav 載入成功！', 'ok'));
+            a.addEventListener('error', () => add('❌ audio/bgm.wav 不存在或格式不支援', 'err'));
+            a.load();
+        }
+    </script>
+</body>
+</html>

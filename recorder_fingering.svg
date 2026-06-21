@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 640" style="background:#faf8f5">
+  <defs>
+    <!-- 直笛圖形模板 -->
+    <g id="recorder">
+      <!-- 吹嘴 -->
+      <rect x="175" y="15" width="50" height="40" rx="6" fill="#c0c0c0" stroke="#666" stroke-width="2"/>
+      <!-- 管身 -->
+      <rect x="160" y="55" width="80" height="240" rx="10" fill="#deb887" stroke="#8b4513" stroke-width="2.5"/>
+      <!-- 底部開口 -->
+      <ellipse cx="200" cy="295" rx="30" ry="8" fill="#5c3a1e" stroke="none"/>
+      <!-- 指孔位置 (白色底) -->
+      <circle cx="140" cy="85" r="10" fill="#fff" stroke="#333" stroke-width="2"/> <!-- 背孔 -->
+      <circle cx="200" cy="125" r="10" fill="#fff" stroke="#333" stroke-width="2"/> <!-- 1孔 -->
+      <circle cx="200" cy="165" r="10" fill="#fff" stroke="#333" stroke-width="2"/> <!-- 2孔 -->
+      <circle cx="200" cy="205" r="10" fill="#fff" stroke="#333" stroke-width="2"/> <!-- 3孔 -->
+      <circle cx="200" cy="245" r="10" fill="#fff" stroke="#333" stroke-width="2"/> <!-- 4孔 -->
+      <!-- 標註線 -->
+      <line x1="150" y1="85" x2="170" y2="85" stroke="#666" stroke-width="1"/>
+      <line x1="210" y1="125" x2="230" y2="125" stroke="#666" stroke-width="1"/>
+      <line x1="210" y1="165" x2="230" y2="165" stroke="#666" stroke-width="1"/>
+      <line x1="210" y1="205" x2="230" y2="205" stroke="#666" stroke-width="1"/>
+      <!-- 標註文字 -->
+      <text x="120" y="90" font-family="'Noto Sans TC', sans-serif" font-size="14" fill="#333" text-anchor="end">背孔 (拇指)</text>
+      <text x="235" y="130" font-family="'Noto Sans TC', sans-serif" font-size="14" fill="#333">第1孔 (食指)</text>
+      <text x="235" y="170" font-family="'Noto Sans TC', sans-serif" font-size="14" fill="#333">第2孔 (中指)</text>
+      <text x="235" y="210" font-family="'Noto Sans TC', sans-serif" font-size="14" fill="#333">第3孔 (無名指)</text>
+      <text x="235" y="250" font-family="'Noto Sans TC', sans-serif" font-size="14" fill="#333">第4孔</text>
+    </g>
+  </defs>
+
+  <text x="400" y="30" font-family="'Noto Sans TC', sans-serif" font-size="22" text-anchor="middle" font-weight="bold" fill="#333">直笛指法對照圖 (配合遊戲題目)</text>
+  <text x="400" y="52" font-family="'Noto Sans TC', sans-serif" font-size="14" text-anchor="middle" fill="#666">● = 按住　○ = 放開　◐ = 半按/放開</text>
+
+  <!-- 1. Si (西) / B -->
+  <g transform="translate(0, 70)">
+    <rect x="20" y="0" width="360" height="280" rx="8" fill="#f0f8ff" stroke="#b0c4de" stroke-width="1"/>
+    <text x="200" y="30" font-family="'Noto Sans TC', sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#1a237e">Si (西) / B</text>
+    <use href="#recorder"/>
+    <!-- 覆蓋顏色：背孔黑、1孔黑 -->
+    <circle cx="140" cy="85" r="10" fill="#222" stroke="#333" stroke-width="2"/>
+    <circle cx="200" cy="125" r="10" fill="#222" stroke="#333" stroke-width="2"/>
+  </g>
+
+  <!-- 2. La (拉) / A -->
+  <g transform="translate(400, 70)">
+    <rect x="20" y="0" width="360" height="280" rx="8" fill="#fff8f0" stroke="#debb90" stroke-width="1"/>
+    <text x="200" y="30" font-family="'Noto Sans TC', sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#1a237e">La (拉) / A</text>
+    <use href="#recorder"/>
+    <circle cx="140" cy="85" r="10" fill="#222" stroke="#333" stroke-width="2"/>
+    <circle cx="200" cy="125" r="10" fill="#222" stroke="#333" stroke-width="2"/>
+    <circle cx="200" cy="165" r="10" fill="#222" stroke="#333" stroke-width="2"/>
+  </g>
+
+  <!-- 3. Sol (搜) / G -->
+  <g transform="translate(0, 350)">
+    <rect x="20" y="0" width="360" height="280" rx="8" fill="#f0fff0" stroke="#90de90" stroke-width="1"/>
+    <text x="200" y="30" font-family="'Noto Sans TC', sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#1a237e">Sol (搜) / G</text>
+    <use href="#recorder"/>
+    <circle cx="140" cy="85" r="10" fill="#222" stroke="#333" stroke-width="2"/>
+    <circle cx="200" cy="125" r="10" fill="#222" stroke="#333" stroke-width="2"/>
+    <circle cx="200" cy="165" r="10" fill="#222" stroke="#333" stroke-width="2"/>
+    <circle cx="200" cy="205" r="10" fill="#222" stroke="#333" stroke-width="2"/>
+  </g>
+
+  <!-- 4. 高音 Do (高音C) -->
+  <g transform="translate(400, 350)">
+    <rect x="20" y="0" width="360" height="280" rx="8" fill="#fff0f5" stroke="#de90b0" stroke-width="1"/>
+    <text x="200" y="30" font-family="'Noto Sans TC', sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#1a237e">高音 Do (高音 C)</text>
+    <use href="#recorder"/>
+    <!-- 背孔半按/放開：灰色 -->
+    <circle cx="140" cy="85" r="10" fill="#999" stroke="#333" stroke-width="2"/>
+    <!-- 1孔放開（保持白色） -->
+    <!-- 2孔按住（黑色） -->
+    <circle cx="200" cy="165" r="10" fill="#222" stroke="#333" stroke-width="2"/>
+    <text x="200" y="265" font-family="'Noto Sans TC', sans-serif" font-size="14" text-anchor="middle" fill="#c62828">* 背孔半按或放開</text>
+  </g>
+</svg>
